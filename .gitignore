@@ -1,8 +1,8 @@
-.axf
-.build_log*
-.htm
-.lnp
-.map
-.o
-.dep
-.uvguix*
+*.axf
+*.build_log*
+*.htm
+*.lnp
+*.map
+*.o
+*.dep
+*.uvguix*
