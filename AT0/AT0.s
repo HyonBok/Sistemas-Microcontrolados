@@ -100,13 +100,13 @@ iterador
 	BEQ voltar
 	CMP R10, #0
 	BEQ media
-	BNE raiz
+	BNE variancia
 	
 ; Decide se vai voltar para função principal ou pra variância
 voltar
 	CMP R10, #0
 	BEQ principal
-	BNE variancia
+	BNE soma_diferencas
 
 media
 	UDIV R8, R5, R4
@@ -137,11 +137,17 @@ soma_diferencas
 
 variancia
 	UDIV R12, R5, R4
+	MOV R1, #0
 	B raiz
 
 raiz
+	ADD R1, #1
+	MUL R2, R1, R1
+	CMP R2, R12
+	BCC raiz
+	SUB R1, #1
 	LDR R12, =DESVIO
-	STRB R9, [R12]
+	STRB R1, [R12]
 	
 	NOP
 
