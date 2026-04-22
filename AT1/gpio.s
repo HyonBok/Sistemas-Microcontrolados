@@ -39,7 +39,7 @@ GPIO_PORTJ_AFSEL_R   	EQU    0x40060420
 GPIO_PORTJ_DEN_R     	EQU    0x4006051C
 GPIO_PORTJ_PUR_R     	EQU    0x40060510	
 GPIO_PORTJ_DATA_R    	EQU    0x400603FC
-GPIO_PORTJ              EQU    2_01000000000000
+GPIO_PORTJ              EQU    0x00000100
 
 ; -------------------------------------------------------------------------------
 ; LEDS - Representam se a quantidade está menor, maior ou igual ao setpoint
@@ -54,7 +54,7 @@ GPIO_PORTN_AFSEL_R   	EQU    0x40064420
 GPIO_PORTN_DEN_R     	EQU    0x4006451C
 GPIO_PORTN_PUR_R     	EQU    0x40064510	
 GPIO_PORTN_DATA_R    	EQU    0x400643FC
-GPIO_PORTN              EQU    2_001000000000000	
+GPIO_PORTN              EQU    0x00001000	
 
 ; -------------------------------------------------------------------------------
 ; Transistor multiplexador dos LEDS de setpoint
@@ -75,7 +75,7 @@ GPIO_PORTP_AFSEL_R   	EQU    0x40065420
 GPIO_PORTP_DEN_R     	EQU    0x4006551C
 GPIO_PORTP_PUR_R     	EQU    0x40065510	
 GPIO_PORTP_DATA_R    	EQU    0x400653FC
-GPIO_PORTP              EQU    2_01000000000000
+GPIO_PORTP              EQU    0x00002000
 
 ; -------------------------------------------------------------------------------
 ; Transistor multiplexador do display 7 segmentos - representam o valor atual do tanque
@@ -96,7 +96,7 @@ GPIO_PORTB_AFSEL_R   	EQU    0x40059420
 GPIO_PORTB_DEN_R     	EQU    0x4005951C
 GPIO_PORTB_PUR_R     	EQU    0x40059510	
 GPIO_PORTB_DATA_R    	EQU    0x400593FC
-GPIO_PORTB              EQU    2_00000000000001
+GPIO_PORTB              EQU    0x00000002
 
 ; -------------------------------------------------------------------------------
 ; Display 7 segmentos e LEDS
@@ -117,7 +117,7 @@ GPIO_PORTQ_AFSEL_R   	EQU    0x40066420
 GPIO_PORTQ_DEN_R     	EQU    0x4006651C
 GPIO_PORTQ_PUR_R     	EQU    0x40066510	
 GPIO_PORTQ_DATA_R    	EQU    0x400663FC
-GPIO_PORTQ              EQU    2_10000000000000
+GPIO_PORTQ              EQU    0x00004000
 
 ; PORT A
 GPIO_PORTA_IS_R      	EQU    0x40058404
@@ -135,7 +135,7 @@ GPIO_PORTA_AFSEL_R   	EQU    0x40058420
 GPIO_PORTA_DEN_R     	EQU    0x4005851C
 GPIO_PORTA_PUR_R     	EQU    0x40058510	
 GPIO_PORTA_DATA_R    	EQU    0x400583FC
-GPIO_PORTA              EQU    2_00000000000000
+GPIO_PORTA              EQU    0x00000001
 
 
 ; -------------------------------------------------------------------------------
@@ -350,16 +350,33 @@ PortN_Output
 ; -------------------------------------------------------------------------------
 ; Função ISR GPIOPortJ_Handler (Tratamento da interrupção)
 GPIOPortJ_Handler
-    LDR R1, =GPIO_PORTJ_ICR_R
-    MOV R0, #2_00000001     
-    STR R0, [R1]      		
+    PUSH {R0, R1, R2, LR}
+    
+    LDR R0, =0x40060418      ; Endereço do GPIO_PORTJ_MIS_R
+    LDR R1, [R0]             ; Lê quem causou a interrupção
+    
+    ; Testar Botão 1 (PJ0) - Incrementa
+    TST R1, #0x01            ; Verifica se o bit 0 está alto
+    BEQ TestaBotao2          ; Se não, vai pro próximo
+    CMP R5, #99              ; Já está no limite?
+    BHS LimpaInterrupcao     ; Se sim, não aumenta
+    ADD R5, R5, #1           ; R5 = Setpoint++
+    B LimpaInterrupcao
 
-	EOR R10, R10, #2_1
-	
-	
-    BX LR             		
- 
-     
+TestaBotao2
+    ; Testar Botão 2 (PJ1) - Decrementa
+    TST R1, #0x02            ; Verifica se o bit 1 está alto
+    BEQ LimpaInterrupcao
+    CMP R5, #10              ; Já está no mínimo?
+    BLS LimpaInterrupcao     ; Se sim, não diminui
+    SUB R5, R5, #1           ; R5 = Setpoint--
+
+LimpaInterrupcao
+    LDR R0, =0x4006041C      ; Endereço do GPIO_PORTJ_ICR_R
+    MOV R1, #0x03            ; Limpa ambos os bits 0 e 1
+    STR R1, [R0]
+    
+    POP {R0, R1, R2, PC}
 
     ALIGN                           
     END                             
