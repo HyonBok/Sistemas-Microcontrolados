@@ -145,8 +145,12 @@ GPIO_PORTA              EQU    2_00000000000000
 
 		; Se alguma função do arquivo for chamada em outro arquivo	
         EXPORT GPIO_Init            ; Permite chamar GPIO_Init de outro arquivo
-		EXPORT PortN_Output			; Permite chamar PortN_Output de outro arquivo
-        EXPORT GPIOPortM_Handler    
+		;EXPORT PortA_Output			; Permite chamar PortN_Output de outro arquivo
+		;EXPORT PortB_Output
+		EXPORT PortN_Output
+		;EXPORT PortP_Output
+		;EXPORT PortQ_Output
+        EXPORT GPIOPortJ_Handler    
         IMPORT EnableInterrupts
         IMPORT DisableInterrupts
 		IMPORT SysTick_Wait1ms
@@ -219,7 +223,7 @@ EsperaGPIO  LDR     R1, [R0]						;Lê da memória o conteúdo do endereço do regis
 			MOV     R1, #2_00110000                 ;Saídas PB4 e PB5
             STR     R1, [R0]					
 			LDR     R0, =GPIO_PORTJ_DIR_R		    
-			MOV     R1, x0_00					    ;Entradas PJ0 e PJ1
+			MOV     R1, #0x00					    ;Entradas PJ0 e PJ1
             STR     R1, [R0]								
             LDR     R0, =GPIO_PORTN_DIR_R		    
 			MOV     R1, #2_00000011					;Saídas PN0 e PN1
@@ -246,7 +250,7 @@ EsperaGPIO  LDR     R1, [R0]						;Lê da memória o conteúdo do endereço do regis
             LDR     R0, =GPIO_PORTQ_AFSEL_R    
             STR     R1, [R0]                    
 ; 6. Setar os bits de DEN para habilitar I/O digital
-            LDR     R0, =GPIO_PORTK_DEN_R			;Carrega o endereço do DEN
+            LDR     R0, =GPIO_PORTA_DEN_R			;Carrega o endereço do DEN
             LDR     R1, [R0]                        ;Ler da memória o registrador GPIO_PORTA_DEN_R
 			MOV     R2, #2_11110000                 
             ORR     R1, R2                          

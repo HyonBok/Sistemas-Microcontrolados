@@ -100,11 +100,11 @@ ARM Macro Assembler    Page 2
                                                             da seção está alinh
                                                             ada 
    63 00000028                 END                          ;Fim do arquivo
-Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp.sp --apcs=
-interwork --depend=.\objects\main.d -o.\objects\main.o -IC:\Keil_v5\ARM\PACK\Ke
-il\TM4C_DFP\1.1.0\Device\Include\TM4C129 -IC:\Keil_v5\ARM\CMSIS\Include --prede
-fine="__EVAL SETA 1" --predefine="__UVISION_VERSION SETA 531" --predefine="TM4C
-1294NCPDT SETA 1" --list=.\listings\main.lst main.s
+Command Line: --debug --xref --diag_suppress=9931,A1950W --cpu=Cortex-M4.fp.sp 
+--depend=.\objects\main.d -o.\objects\main.o -I"C:\Users\Hyon Bok Lucas\AppData
+\Local\Arm\Packs\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C129" --predefine="__EVA
+L SETA 1" --predefine="__UVISION_VERSION SETA 543" --predefine="TM4C1294NCPDT S
+ETA 1" --list=.\listings\main.lst main.s
 
 
 
