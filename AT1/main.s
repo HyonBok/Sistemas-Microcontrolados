@@ -68,7 +68,7 @@ esvaziando
     B mux
 
 estabilidade
-	MOV R3, #3
+	MOV R0, #3
 	BL PortN_Output
 	
 mux
@@ -99,18 +99,23 @@ mux
 	BL SysTick_Wait1ms
 	
 	;setpoint
-	MOV R0, R5
-	BL mostrar
-	MOV R0, #2_100000 ;liga Q3
-    LDR R2, =0x400653FC ;DATA PORT P
-    STR R0, [R2]
-    MOV R0, #1
-    BL SysTick_Wait1ms
-    MOV R0, #0
+	; Pega os 4 bits mais significativos de R5 e joga na PORTA
+	AND R2, R5, #0xF0      
+	LDR R3, =0x400583FC    
+	STR R2, [R3]
+	; Pega os 4 bits menos significativos de R5 e joga na PORTQ
+	AND R2, R5, #0x0F      
+	LDR R3, =0x400663FC    
+	STR R2, [R3]
+	MOV R0, #2_100000 ;liga Q3 
+	LDR R2, =0x400653FC ;DATA PORT P
+	STR R0, [R2]
+	MOV R0, #1
+	BL SysTick_Wait1ms
+	MOV R0, #0
 	STR R0, [R2] ;desliga Q3
 	BL SysTick_Wait1ms
-	
-	SUBS R6, R6, #1 ;se der zero ativa a flag
+	SUBS R6, R6, #1
 	BNE loop
 	
 	LDR R6, =166
