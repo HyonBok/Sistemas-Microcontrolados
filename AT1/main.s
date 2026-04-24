@@ -50,7 +50,7 @@ Start
 	
 	MOV R4, #10 ;nível atual
 	MOV R5, #50 ;setpoint
-	LDR R6, =166
+	LDR R6, =83
 	
 loop
     CMP R4, R5
@@ -83,6 +83,7 @@ mux
 	BL SysTick_Wait1ms ;deixa ligado por 1ms
 	MOV R0, #0
 	STR R0, [R2] ;desliga Q1
+	MOV R0, #1
 	BL SysTick_Wait1ms
 	
 	;unidade
@@ -96,6 +97,7 @@ mux
     BL SysTick_Wait1ms
     MOV R0, #0
     STR R0, [R2] ;desliga Q2
+	MOV R0, #1
 	BL SysTick_Wait1ms
 	
 	;setpoint
@@ -114,11 +116,12 @@ mux
 	BL SysTick_Wait1ms
 	MOV R0, #0
 	STR R0, [R2] ;desliga Q3
+	MOV R0, #1
 	BL SysTick_Wait1ms
 	SUBS R6, R6, #1
 	BNE loop
 	
-	LDR R6, =166
+	LDR R6, =83
 	CMP R4, R5
 	IT LT
 		ADDLT R4, R4, #1 ;se menor, aumenta R4 em 1
