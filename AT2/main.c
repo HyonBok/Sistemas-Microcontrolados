@@ -14,6 +14,7 @@ void GPIO_Init(void);
 void Pisca_leds(void);
 void LCD_EnviaComando(uint32_t comando);
 void LCD_EnviaDado(uint32_t dado);
+void LCD_EnviaString (const char *string);
 char Leitura_Teclado();
 
 int main(void)

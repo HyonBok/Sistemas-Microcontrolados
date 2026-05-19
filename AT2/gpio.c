@@ -86,6 +86,14 @@ void LCD_EnviaDado(uint32_t dado) {
 		SysTick_Wait1us(40);
 }
 
+void LCD_EnviaString (const char *string) {
+	while (*string != '\0') {
+		LCD_EnviaDado (*string);
+		string ++;
+	}
+}
+
+
 char Leitura_Teclado()
 {
     uint32_t coluna;
