@@ -25,11 +25,12 @@ void GPIO_Init(void)
 {
 	//1a. Ativar o clock para a porta setando o bit correspondente no registrador RCGCGPIO
 	SYSCTL_RCGCGPIO_R = (GPIO_PORTK | GPIO_PORTM | GPIO_PORTL);
+
 	//1b.   após isso verificar no PRGPIO se a porta está pronta para uso.
   while((SYSCTL_PRGPIO_R & 
 		(GPIO_PORTK | GPIO_PORTM | GPIO_PORTL) ) != 
 		(GPIO_PORTK | GPIO_PORTM | GPIO_PORTL) ){};
-		
+	
 	// 2. Limpar o AMSEL para desabilitar a analógica
 	GPIO_PORTK_AMSEL_R = 0x00;
 	GPIO_PORTM_AMSEL_R = 0x00;
@@ -86,6 +87,29 @@ void LCD_EnviaDado(uint32_t dado) {
 		SysTick_Wait1us(40);
 }
 
+void Inicializa_Timer() {
+	SYSCTL_RCGCTIMER_R = 0x0;
+	
+	while(SYSCTL_RCGCTIMER_R != 0x0) {};
+		
+  TIMER0_CTL_R &= ~TIMER_CTL_TAEN;
+
+  TIMER0_CFG_R = TIMER_CFG_32_BIT_TIMER;
+  TIMER0_TAMR_R = TIMER_TAMR_TAMR_PERIOD;
+
+  TIMER0_TAILR_R = 1600000 - 1;
+
+  TIMER0_TAPR_R = 0;
+
+  TIMER0_ICR_R = TIMER_ICR_TATOCINT;
+
+  TIMER0_IMR_R |= TIMER_IMR_TATOIM;
+
+  NVIC_PRI4_R |= (2 << 29);
+  NVIC_EN0_R |= (1 << 19);
+}
+
+
 char Leitura_Teclado()
 {
     uint32_t coluna;
@@ -118,3 +142,10 @@ char Leitura_Teclado()
 		return ' ';
 }
 
+void Timer0A_Handler()
+{
+	// Limpar o flag de interrupção
+	TIMER0_ICR_R = 0x01;
+	
+	/* Fazer o que tem que fazer */
+}

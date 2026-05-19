@@ -14,6 +14,7 @@ void GPIO_Init(void);
 void Pisca_leds(void);
 void LCD_EnviaComando(uint32_t comando);
 void LCD_EnviaDado(uint32_t dado);
+void Inicializa_Timer();
 char Leitura_Teclado();
 
 int main(void)
@@ -21,35 +22,31 @@ int main(void)
 	PLL_Init();
 	SysTick_Init();
 	GPIO_Init();
+	Inicializa_Timer();
 	
 	LCD_EnviaComando(0x38); // Modo 2 linhas
 	LCD_EnviaComando(0x06); // Cursor direita
 	LCD_EnviaComando(0x0E); // Ligar
-	LCD_EnviaComando(0x01); // Limpar
-	
-	LCD_EnviaDado('U');
-	LCD_EnviaDado('T');
-	LCD_EnviaDado('F');
-	LCD_EnviaDado('P');
-	LCD_EnviaDado('R');
 	
 	LCD_EnviaComando(0xC0); // Início Segunda Linha
-	LCD_EnviaDado('G');
-	LCD_EnviaDado('L');
-	LCD_EnviaDado('Y');
-	LCD_EnviaDado('C');
-	LCD_EnviaDado('O');
-	LCD_EnviaDado('N');
-	LCD_EnviaDado(' ');
-	LCD_EnviaDado('E');
-	LCD_EnviaDado('L');
-	LCD_EnviaDado('E');
-	LCD_EnviaDado('N');
-	LCD_EnviaDado(' ');
-	LCD_EnviaDado('H');
-	LCD_EnviaDado('Y');
-	LCD_EnviaDado('O');
-	LCD_EnviaDado('N');
+
+	while(1)
+	{
+		char tecla = Leitura_Teclado();
+		
+		/*
+		codigo exemplo
+		if (tecla == '0')
+		{
+			LCD_EnviaComando(0x01); // Limpar
+		
+			char angulo = '1';
+		
+			LCD_EnviaDado(angulo);
+		}
+		
+		*/
+	}
 	
 }
 
