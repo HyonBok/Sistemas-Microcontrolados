@@ -44,7 +44,8 @@ void GPIO_Init(void)
 	// 4. DIR para 0 se for entrada, 1 se for saída
 	GPIO_PORTK_DIR_R = 0xFF; 
 	GPIO_PORTM_DIR_R = 0xF7;
-	GPIO_PORTL_DIR_R = 0x00;
+	// Saída para motor
+	GPIO_PORTL_DIR_R = 0x10;
 		
 	// 5. Limpar os bits AFSEL para 0 para selecionar GPIO sem função alternativa	
 	GPIO_PORTK_AFSEL_R = 0x00;
@@ -54,13 +55,15 @@ void GPIO_Init(void)
 	// 6. Setar os bits de DEN para habilitar I/O digital	
 	GPIO_PORTK_DEN_R = 0xFF;
 	GPIO_PORTM_DEN_R = 0xF7;
-	GPIO_PORTL_DEN_R = 0x0F;
+	// Habilidando digital para linhas PL0-PL3 e digital do motor PL4
+	GPIO_PORTL_DEN_R = 0x1F;
 	
 	// 7. Habilitar resistor de pull-up interno, setar PUR para 1
 	GPIO_PORTL_PUR_R = 0x0F;
 }	
 
-void LCD_EnviaComando(uint32_t comando) {
+void LCD_EnviaComando(uint32_t comando)
+{
     GPIO_PORTK_DATA_R = comando;
     GPIO_PORTM_DATA_R &= ~0x03; // PM0 e PM1 vão pra 0
     GPIO_PORTM_DATA_R |= 0x04;  // PM2 para 1
@@ -77,7 +80,8 @@ void LCD_EnviaComando(uint32_t comando) {
 		}
 }
 
-void LCD_EnviaDado(uint32_t dado) {
+void LCD_EnviaDado(uint32_t dado) 
+{
     GPIO_PORTK_DATA_R = dado;
     GPIO_PORTM_DATA_R &= ~0x02; // PM0 vai pra 0
     GPIO_PORTM_DATA_R |= 0x01;  // PM1 para 1
@@ -94,7 +98,9 @@ void LCD_EnviaString (const char *string) {
 	}
 }
 
-void Inicializa_Timer() {
+// Inicializa timer0 32bits periódico
+void Inicializa_Timer() 
+{
 	SYSCTL_RCGCTIMER_R = 0x0;
 	
 	while(SYSCTL_RCGCTIMER_R != 0x0) {};
@@ -115,7 +121,6 @@ void Inicializa_Timer() {
   NVIC_PRI4_R |= (2 << 29);
   NVIC_EN0_R |= (1 << 19);
 }
-
 
 char Leitura_Teclado()
 {
