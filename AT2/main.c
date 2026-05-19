@@ -6,6 +6,10 @@
 
 #include <stdint.h>
 
+#define LIMPAR 0x01
+#define PRIMEIRA_LINHA 0x80
+#define SEGUNDA_LINHA 0xC0
+
 void PLL_Init(void);
 void SysTick_Init(void);
 void SysTick_Wait1ms(uint32_t delay);
@@ -18,6 +22,15 @@ void LCD_EnviaString (const char *string);
 void Inicializa_Timer();
 char Leitura_Teclado();
 
+typedef enum {
+	Idle = 0,
+	Posicao = 1,
+	Scan = 2,
+} Estado;
+
+Estado EstadoAtual = Idle;
+int AnguloAtual = 0;
+
 int main(void)
 {
 	PLL_Init();
@@ -28,26 +41,70 @@ int main(void)
 	LCD_EnviaComando(0x38); // Modo 2 linhas
 	LCD_EnviaComando(0x06); // Cursor direita
 	LCD_EnviaComando(0x0E); // Ligar
+	LCD_EnviaComando(PRIMEIRA_LINHA); // Início Primeira Linha
 	
-	LCD_EnviaComando(0xC0); // Início Segunda Linha
+	LCD_EnviaString("Modo Idle");
 
 	while(1)
 	{
 		char tecla = Leitura_Teclado();
 		
-		/*
-		codigo exemplo
-		if (tecla == '0')
+		TrocarEstado(tecla);
+		
+		if(EstadoAtual == Posicao)
 		{
-			LCD_EnviaComando(0x01); // Limpar
-		
-			char angulo = '1';
-		
-			LCD_EnviaDado(angulo);
+			LCD_EnviaComando(LIMPAR); 
+			LCD_EnviaComando(PRIMEIRA_LINHA); 
+			LCD_EnviaString("Modo Posicao");
+			LCD_EnviaComando(SEGUNDA_LINHA); 
+
+			if(tecla != '0'){
+				// Intervalo de 0º até 160º
+				AnguloAtual = (tecla - '1') * 20;
+			}
+			else{
+				AnguloAtual = 180;
+			}
+			
+			float DutyCycle = 0.5 + AnguloAtual / 180 * 2;
+
+			char Mensagem[50];
+			snprintf(Mensagem, sizeof(Mensagem), "Pos: %dº / %.1fus", AnguloAtual, DutyCycle);
+
+			LCD_EnviaString(Mensagem);
 		}
-		
-		*/
+		else if(EstadoAtual == Scan)
+		{
+			LCD_EnviaComando(LIMPAR); 
+			LCD_EnviaComando(PRIMEIRA_LINHA); 
+			LCD_EnviaString("Modo Scan");
+			LCD_EnviaComando(SEGUNDA_LINHA); 
+
+			/* Adicionar angulo na interrupção */
+			
+		}
 	}
-	
+
+	return 0;
+}
+
+void TrocarEstado(char tecla){
+	if(tecla == ' '){
+		// Caso não seja pressionado nada, vai continuar apenas no mesmo estado
+		return;
+	}
+	else if(tecla == '*'){
+		EstadoAtual = Idle;
+		LCD_EnviaComando(LIMPAR); 
+		LCD_EnviaComando(PRIMEIRA_LINHA);
+		LCD_EnviaString("Modo Idle");
+	}
+	else if(tecla >= '0' && tecla <= '9'){
+		EstadoAtual = Posicao;
+	}
+	else if(tecla == 'A'){
+		EstadoAtual = Scan;
+		AnguloAtual = 0;
+	}
 }
 
