@@ -55,8 +55,14 @@ int main(void)
 		
 		TrocarEstado(tecla);
 		
-		if(EstadoAtual == Posicao)
-		{
+		if(EstadoAtual == Idle){
+			// Fixo angulo de 90 graus
+			// dutyCycle = 0.5 + 90 / 180 * 2
+			float dutyCycle = 1.5;
+				
+			Inicializa_Timer0((uint32_t)(dutyCycle * 1000));
+		}
+		else if(EstadoAtual == Posicao){
 			LCD_EnviaComando(LIMPAR); 
 			LCD_EnviaComando(PRIMEIRA_LINHA); 
 			LCD_EnviaString("Modo Posicao");
@@ -76,20 +82,18 @@ int main(void)
 			snprintf(Mensagem, sizeof(Mensagem), "Pos: %d / %.1fus", AnguloAtual, dutyCycle);
 
 			// Timer que decide PWM do motor
-			Inicializa_Timer0(dutyCycle);
+			Inicializa_Timer0((uint32_t)(dutyCycle * 1000));
 			
 			LCD_EnviaString(Mensagem);
-			
-			/* Mudar DutyCycle */
 		}
-		else if(EstadoAtual == Scan)
-		{
+		else if(EstadoAtual == Scan){
 			LCD_EnviaComando(LIMPAR); 
 			LCD_EnviaComando(PRIMEIRA_LINHA); 
 			LCD_EnviaString("Modo Scan");
 			LCD_EnviaComando(SEGUNDA_LINHA); 
 
 			/* Adicionar angulo na interrupção */
+			
 			
 		}
 	}
@@ -114,6 +118,7 @@ void TrocarEstado(char tecla){
 	else if(tecla == 'A'){
 		EstadoAtual = Scan;
 		AnguloAtual = 0;
+		Inicializa_Timer2();
 	}
 }
 

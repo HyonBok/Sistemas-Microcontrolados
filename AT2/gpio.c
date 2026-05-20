@@ -16,7 +16,7 @@ char teclado[4][4] =
     {'*','0','#','D'}
 };
 
-float DutyCycle = 0.5;
+uint32_t DutyCycle = 500;
 int pino = 0; // Flag on/off
 
 void SysTick_Wait1us(uint32_t delay);
@@ -104,9 +104,10 @@ void LCD_EnviaString (const char *string) {
 // Configura timer0 e timer2 32bits periódico
 void Configura_Timers() 
 {
-	SYSCTL_RCGCTIMER_R = 0x0;
+	// Inicializar timer0 e timer 2
+	SYSCTL_RCGCTIMER_R = 0x05;
 	
-	while(SYSCTL_RCGCTIMER_R != 0x0) {};
+	while(SYSCTL_RCGCTIMER_R != 0x05) {};
 		
   TIMER0_CTL_R &= ~TIMER_CTL_TAEN;
   TIMER2_CTL_R &= ~TIMER_CTL_TAEN;
@@ -140,11 +141,15 @@ void Configura_Timers()
 // Timer0 é que define o PWM do servo motor, então valor de tempo vai variar
 void Inicializa_Timer0(float dutyCycle)
 {
-	// Primeiro verifica se o dutyCycle mudou, caso contrário, não faz sentido mudar
+	// Primeiro verifica se o dutyCycle mudou, caso contrário, não faz sentido continuar
 	if(dutyCycle == DutyCycle)
 		return;
 	
-	float x = dutyCycle * 80000;
+	// Atualiza o DutyCycle
+	DutyCycle = dutyCycle;
+	
+	// Inicia o timer
+	uint32_t x = (uint32_t)dutyCycle * 80000;
 	
 	TIMER0_TAILR_R = x - 1;
 }
@@ -198,7 +203,33 @@ void Timer0A_Handler()
 	// Limpar o flag de interrupção
 	TIMER0_ICR_R = 0x01;
 	
-	/* Fazer o que tem que fazer */
+	// Tempo HIGH
+	uint32_t tempoHigh = (uint32_t)(DutyCycle * 80000);
+	
+	if(pino == 0)
+	{
+		// Ligar pino
+		GPIO_PORTL_DATA_R |= 0x10; // PL4 = HIGH
+
+		TIMER0_TAILR_R = tempoHigh - 1;
+
+		pino = 1;
+	}
+	else
+	{
+		// Desligar pino
+		GPIO_PORTL_DATA_R &= ~0x10; // PL4 = LOW
+
+		// Completa os 20ms
+		uint32_t tempoLow = 1600000 - tempoHigh;
+
+		TIMER0_TAILR_R = tempoLow - 1;
+
+		pino = 0;
+	}
+
+	// Reinicia contador
+	TIMER0_TAV_R = TIMER0_TAILR_R;
 }
 
 
@@ -207,5 +238,6 @@ void Timer2A_Handler()
 	// Limpar o flag de interrupção
 	TIMER2_ICR_R = 0x01;
 	
-	/* Fazer o que tem que fazer */
+	// Adicionar 
+	
 }
