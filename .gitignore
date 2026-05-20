@@ -5,7 +5,6 @@
 *.map
 *.o
 *.dep
-*.uvguix*
 *.scvd
 *._ac
 EX*

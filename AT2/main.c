@@ -20,7 +20,9 @@ void Pisca_leds(void);
 void LCD_EnviaComando(uint32_t comando);
 void LCD_EnviaDado(uint32_t dado);
 void LCD_EnviaString (const char *string);
-void Inicializa_Timer();
+void Configura_Timers();
+void Inicializa_Timer0(float dutyCycle);
+void Inicializa_Timer2();
 char Leitura_Teclado();
 void TrocarEstado(char tecla);
 
@@ -38,7 +40,7 @@ int main(void)
 	PLL_Init();
 	SysTick_Init();
 	GPIO_Init();
-	Inicializa_Timer();
+	Configura_Timers();
 	
 	LCD_EnviaComando(0x38); // Modo 2 linhas
 	LCD_EnviaComando(0x06); // Cursor direita
@@ -68,12 +70,17 @@ int main(void)
 				AnguloAtual = 180;
 			}
 			
-			float DutyCycle = 0.5 + AnguloAtual / 180 * 2;
+			float dutyCycle = 0.5 + AnguloAtual / 180 * 2;
 
 			char Mensagem[50];
-			snprintf(Mensagem, sizeof(Mensagem), "Pos: %d / %.1fus", AnguloAtual, DutyCycle);
+			snprintf(Mensagem, sizeof(Mensagem), "Pos: %d / %.1fus", AnguloAtual, dutyCycle);
 
+			// Timer que decide PWM do motor
+			Inicializa_Timer0(dutyCycle);
+			
 			LCD_EnviaString(Mensagem);
+			
+			/* Mudar DutyCycle */
 		}
 		else if(EstadoAtual == Scan)
 		{
