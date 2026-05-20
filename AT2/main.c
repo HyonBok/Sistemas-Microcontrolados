@@ -57,7 +57,7 @@ int main(void)
 		
 		if(EstadoAtual == Idle){
 			// Fixo angulo de 90 graus
-			// dutyCycle = 0.5 + 90 / 180 * 2
+			// dutyCycle = 0.5 + 90 / 180 * 2 = 1.5
 			float dutyCycle = 1.5;
 				
 			Inicializa_Timer0((uint32_t)(dutyCycle * 1000));
@@ -91,9 +91,6 @@ int main(void)
 			LCD_EnviaComando(PRIMEIRA_LINHA); 
 			LCD_EnviaString("Modo Scan");
 			LCD_EnviaComando(SEGUNDA_LINHA); 
-
-			/* Adicionar angulo na interrupção */
-			
 			
 		}
 	}

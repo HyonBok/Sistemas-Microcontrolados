@@ -17,7 +17,8 @@ char teclado[4][4] =
 };
 
 uint32_t DutyCycle = 500;
-int pino = 0; // Flag on/off
+uint8_t Pino = 0; // Flag HIGH/LOW PWM
+int8_t DirecaoScan = 1; // Flag de direção para modo scan: 1 se tiver somando 20 e -1 se tiver subtraindo
 
 void SysTick_Wait1us(uint32_t delay);
 void SysTick_Wait1ms(uint32_t delay);
@@ -206,14 +207,14 @@ void Timer0A_Handler()
 	// Tempo HIGH
 	uint32_t tempoHigh = (uint32_t)(DutyCycle * 80000);
 	
-	if(pino == 0)
+	if(Pino == 0)
 	{
 		// Ligar pino
 		GPIO_PORTL_DATA_R |= 0x10; // PL4 = HIGH
 
 		TIMER0_TAILR_R = tempoHigh - 1;
 
-		pino = 1;
+		Pino = 1;
 	}
 	else
 	{
@@ -225,7 +226,7 @@ void Timer0A_Handler()
 
 		TIMER0_TAILR_R = tempoLow - 1;
 
-		pino = 0;
+		Pino = 0;
 	}
 
 	// Reinicia contador
@@ -238,6 +239,14 @@ void Timer2A_Handler()
 	// Limpar o flag de interrupção
 	TIMER2_ICR_R = 0x01;
 	
-	// Adicionar 
+	// Adicionar ou subtrair dutyCycle enquivalente a um angulo de 20º (multiplicado por 1000 pela conversao de ms)
+	// DutyCycle = (0.5 + 20 / 180 * 2) * 1000 = 722
+	DutyCycle += 722 * DirecaoScan;
 	
+	// Servo estará com DutyCycle no máximo quando o ângulo for 180º e minimo quando for 0º
+	// DutyCycleMaximo = (0.5 + 180 / 180 * 2) * 1000 = 2500
+	// DutyCycleMinimo = (0.5 + 0 / 180 * 2) * 1000 = 500
+	if(DutyCycle <= 500 || DutyCycle >= 2500){
+		DirecaoScan *= -1;
+	}
 }
