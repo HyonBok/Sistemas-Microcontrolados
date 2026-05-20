@@ -5,6 +5,7 @@
 // Prof. Guilherme Peron
 
 #include <stdint.h>
+#include <stdio.h>
 
 #define LIMPAR 0x01
 #define PRIMEIRA_LINHA 0x80
@@ -21,6 +22,7 @@ void LCD_EnviaDado(uint32_t dado);
 void LCD_EnviaString (const char *string);
 void Inicializa_Timer();
 char Leitura_Teclado();
+void TrocarEstado(char tecla);
 
 typedef enum {
 	Idle = 0,
@@ -69,7 +71,7 @@ int main(void)
 			float DutyCycle = 0.5 + AnguloAtual / 180 * 2;
 
 			char Mensagem[50];
-			snprintf(Mensagem, sizeof(Mensagem), "Pos: %dº / %.1fus", AnguloAtual, DutyCycle);
+			snprintf(Mensagem, sizeof(Mensagem), "Pos: %d / %.1fus", AnguloAtual, DutyCycle);
 
 			LCD_EnviaString(Mensagem);
 		}

@@ -111,11 +111,11 @@ void Inicializa_Timer()
   	TIMER0_CFG_R = TIMER_CFG_32_BIT_TIMER;
   	TIMER0_TAMR_R = TIMER_TAMR_TAMR_PERIOD;
 
-	TIMER2_CFG_R = TIMER_CFG_32_BIT_TIMER;
-  	TIMER2_TAMR_R = TIMER_TAMR_TAMR_PERIOD;
+		TIMER2_CFG_R = TIMER_CFG_32_BIT_TIMER;
+		TIMER2_TAMR_R = TIMER_TAMR_TAMR_PERIOD;
 
   	TIMER0_TAILR_R = 1600000 - 1;
-	TIMER2_TAILR_R = 1600000 - 1;
+		TIMER2_TAILR_R = 1600000 - 1;
 
   	TIMER0_TAPR_R = 0;
   	TIMER2_TAPR_R = 0;
@@ -126,12 +126,12 @@ void Inicializa_Timer()
   	TIMER0_IMR_R |= TIMER_IMR_TATOIM;
   	TIMER2_IMR_R |= TIMER_IMR_TATOIM;
 
-	// Prioridade 2
+		// Prioridade 2
   	NVIC_PRI4_R |= (2 << 29);
   	NVIC_EN0_R |= (1 << 19);
 
-	// Prioridade 1
-	NVIC_PRI5_R |= (1 << 29);
+		// Prioridade 1
+		NVIC_PRI5_R |= (1 << 29);
   	NVIC_EN2_R |= (1 << 23);
 }
 
