@@ -68,8 +68,8 @@ int main(void)
 
 		if (EstadoAtual == Scan && UsandoTimer)
 		{
-			Inicializa_Timer0((uint32_t)(dutyCycle_ms * 1000));
 			float dutyCycle_ms = (float)DutyCycle / 1000.0f;
+			Inicializa_Timer0((uint32_t)(dutyCycle_ms * 1000));
 			// Derivar angulo a partir do DutyCycle atual
 			// dc = 500 + (angulo/180)*2000  =>  angulo = (dc-500)/2000 * 180
 			AtualizaLCDPosicao(AnguloAtual, dutyCycle_ms);
