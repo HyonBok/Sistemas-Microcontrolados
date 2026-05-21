@@ -8,14 +8,6 @@
 #define GPIO_PORTM  (0x0800) //bit 11
 #define GPIO_PORTL  (0x0400) //bit 10
 
-char teclado[4][4] =
-{
-    {'1','2','3','A'},
-    {'4','5','6','B'},
-    {'7','8','9','C'},
-    {'*','0','#','D'}
-};
-
 uint32_t DutyCycle = 500;
 uint8_t Pino = 0; // Flag HIGH/LOW PWM
 int8_t DirecaoScan = 1; // Flag de direção para modo scan: 1 se tiver somando 20 e -1 se tiver subtraindo
@@ -140,7 +132,7 @@ void Configura_Timers()
 
 // Inicializa timer0
 // Timer0 é que define o PWM do servo motor, então valor de tempo vai variar
-void Inicializa_Timer0(float dutyCycle)
+void Inicializa_Timer0(int dutyCycle)
 {
 	// Primeiro verifica se o dutyCycle mudou, caso contrário, não faz sentido continuar
 	if(dutyCycle == DutyCycle)
@@ -167,36 +159,105 @@ void Inicializa_Timer2()
 	TIMER2_TAILR_R = 40000000 - 1;
 }
 
-char Leitura_Teclado()
-{
-    uint32_t coluna;
-		uint32_t linhas;
-		uint8_t linha;
+void encontrou() {
+  GPIO_PORTM_DATA_R = GPIO_PORTM_DATA_R & 0xFFFFFF0F;
+  GPIO_PORTM_DIR_R = 0x07;
+}
 
-		for(coluna = 0; coluna < 4; coluna++)
-		{
-			// Tenho que ter cuidado para não mexer nos valores da PORTM do display LCD(PM0-PM2)
-			// Mexendo a partir da coluna PM4
-			GPIO_PORTM_DATA_R = ~(1 << (coluna + 4));
-			
-			linhas = GPIO_PORTL_DATA_R & 0x0F;
-			
-			// Se as linhas estão 1111, quer dizer que não há nada pressionado, caso contrário entra no if
-			if(linhas != 0x0F)
-			{
-				// For para descobrir qual linha
-				for(linha = 0; linha < 4; linha++)
-				{
-					if((linhas & ~(1 << linha)) == 0)
-					{
-						return teclado[coluna][linha];
-					}
-				}
-			}
-    }
-		
-		// Retornando espaço caso não tenha nada(ver outro caracter talve?)
-		return ' ';
+char Leitura_Teclado() {
+  GPIO_PORTM_DIR_R = 0x17;
+  SysTick_Wait1ms(2);
+  GPIO_PORTM_DATA_R = GPIO_PORTM_DATA_R & 0xFFFFFFEF;
+  SysTick_Wait1ms(2);
+  switch (GPIO_PORTL_DATA_R & 0xF) {
+  case 0xE:
+    encontrou();
+    return '1';
+    break;
+  case 0xD:
+    encontrou();
+    return '4';
+    break;
+  case 0xB:
+    encontrou();
+    return '7';
+    break;
+  case 0x7:
+    encontrou();
+    return '*';
+    break;
+  }
+
+  GPIO_PORTM_DIR_R = 0x27;
+  SysTick_Wait1ms(2);
+  GPIO_PORTM_DATA_R = GPIO_PORTM_DATA_R & 0xFFFFFFDF;
+  SysTick_Wait1ms(2);
+  switch (GPIO_PORTL_DATA_R & 0xF) {
+  case 0xE:
+    encontrou();
+    return '2';
+    break;
+  case 0xD:
+    encontrou();
+    return '5';
+    break;
+  case 0xB:
+    encontrou();
+    return '8';
+    break;
+  case 0x7:
+    encontrou();
+    return '0';
+    break;
+  }
+
+  GPIO_PORTM_DIR_R = 0x47;
+  SysTick_Wait1ms(2);
+  GPIO_PORTM_DATA_R = GPIO_PORTM_DATA_R & 0xFFFFFFBF;
+  SysTick_Wait1ms(2);
+  switch (GPIO_PORTL_DATA_R & 0xF) {
+  case 0xE:
+    encontrou();
+    return '3';
+    break;
+  case 0xD:
+    encontrou();
+    return '6';
+    break;
+  case 0xB:
+    encontrou();
+    return '9';
+    break;
+  case 0x7:
+    encontrou();
+    return '#';
+    break;
+  }
+	
+  GPIO_PORTM_DIR_R = 0x87;
+  SysTick_Wait1ms(2);
+  GPIO_PORTM_DATA_R = GPIO_PORTM_DATA_R & 0xFFFFFF7F;
+  SysTick_Wait1ms(2);
+  switch (GPIO_PORTL_DATA_R & 0xF) {
+  case 0xE:
+    encontrou();
+    return 'A';
+    break;
+  case 0xD:
+    encontrou();
+    return 'B';
+    break;
+  case 0xB:
+    encontrou();
+    return 'C';
+    break;
+  case 0x7:
+    encontrou();
+    return 'D';
+    break;
+  }
+  encontrou();
+  return 'F';
 }
 
 void Timer0A_Handler()

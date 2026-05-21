@@ -21,7 +21,7 @@ void LCD_EnviaComando(uint32_t comando);
 void LCD_EnviaDado(uint32_t dado);
 void LCD_EnviaString(const char *string);
 void Configura_Timers(void);
-void Inicializa_Timer0(float dutyCycle);
+void Inicializa_Timer0(int dutyCycle);
 void Inicializa_Timer2(void);
 char Leitura_Teclado(void);
 void TrocarEstado(char tecla);
@@ -65,27 +65,14 @@ int main(void)
 
 		TrocarEstado(tecla);
 
-		if (EstadoAtual == Posicao && tecla >= '0' && tecla <= '9')
-		{
-			if (tecla != '0')
-				AnguloAtual = (tecla - '1') * 20; 
-			else
-				AnguloAtual = 180;                
-
-			float dutyCycle_ms = 0.5f + ((float)AnguloAtual / 180.0f) * 2.0f;
-			Inicializa_Timer0((uint32_t)(dutyCycle_ms * 1000));
-			AtualizaLCDPosicao(AnguloAtual, dutyCycle_ms);
-		}
-
 		if (EstadoAtual == Scan && DutyCycle != ultimoDutyCycle)
 		{
 			ultimoDutyCycle = DutyCycle;
-
+			float dutyCycle_ms = (float)DutyCycle / 1000.0f;
+			AtualizaLCDPosicao(AnguloAtual, dutyCycle_ms);
 			// Derivar angulo a partir do DutyCycle atual
 			// dc = 500 + (angulo/180)*2000  =>  angulo = (dc-500)/2000 * 180
 			AnguloAtual = (int)(((float)(DutyCycle - 500) / 2000.0f) * 180.0f);
-
-			float dutyCycle_ms = (float)DutyCycle / 1000.0f;
 			AtualizaLCDPosicao(AnguloAtual, dutyCycle_ms);
 		}
 	}
@@ -125,14 +112,23 @@ void TrocarEstado(char tecla)
 	else if (tecla >= '0' && tecla <= '9')
 	{
 		if (EstadoAtual != Posicao)
-		{
-			// So reescreve a primeira linha ao entrar no modo pela primeira vez
-			TIMER2_CTL_R &= ~TIMER_CTL_TAEN; // Para o Timer2 se vinha do Scan
-			EstadoAtual = Posicao;
-			LCD_EnviaComando(LIMPAR);
-			LCD_EnviaComando(PRIMEIRA_LINHA);
-			LCD_EnviaString("Modo Posicao");
-		}
+        {
+            // So reescreve a primeira linha ao entrar no modo pela primeira vez
+            TIMER2_CTL_R &= ~TIMER_CTL_TAEN; // Para o Timer2 se vinha do Scan
+            EstadoAtual = Posicao;
+            LCD_EnviaComando(LIMPAR);
+            LCD_EnviaComando(PRIMEIRA_LINHA);
+            LCD_EnviaString("Modo Posicao");
+        }
+
+        if (tecla != '0')
+            AnguloAtual = (tecla - '1') * 20; 
+        else
+            AnguloAtual = 180;
+
+        float dutyCycle_ms = 0.5f + ((float)AnguloAtual / 180.0f) * 2.0f;
+        Inicializa_Timer0((uint32_t)(dutyCycle_ms * 1000));
+        AtualizaLCDPosicao(AnguloAtual, dutyCycle_ms);
 	}
 	else if (tecla == 'A')
 	{
