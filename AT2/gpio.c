@@ -12,6 +12,9 @@ uint32_t DutyCycle = 500;
 uint8_t Pino = 0; // Flag HIGH/LOW PWM
 int8_t DirecaoScan = 1; // Flag de direção para modo scan: 1 se tiver somando 20 e -1 se tiver subtraindo
 
+int UsandoTimer;
+extern int AnguloAtual;
+
 void SysTick_Wait1us(uint32_t delay);
 void SysTick_Wait1ms(uint32_t delay);
 // -------------------------------------------------------------------------------
@@ -127,7 +130,7 @@ void Configura_Timers()
 
 	// Prioridade 1
 	NVIC_PRI5_R |= (1 << 29);
-  NVIC_EN2_R |= (1 << 23);
+  NVIC_EN0_R |= (1 << 23);
 }
 
 // Inicializa timer0
@@ -145,6 +148,7 @@ void Inicializa_Timer0(int dutyCycle)
 	uint32_t x = (uint32_t)dutyCycle * 80000;
 	
 	TIMER0_TAILR_R = x - 1;
+	TIMER0_CTL_R |= 0x01;
 }
 
 // Inicializa timer2
@@ -157,6 +161,7 @@ void Inicializa_Timer2()
 	contagem = X - 1
 	*/
 	TIMER2_TAILR_R = 40000000 - 1;
+	TIMER2_CTL_R |= 0x01;
 }
 
 void encontrou() {
@@ -302,12 +307,19 @@ void Timer2A_Handler()
 	
 	// Adicionar ou subtrair dutyCycle enquivalente a um angulo de 20º (multiplicado por 1000 pela conversao de ms)
 	// DutyCycle = (0.5 + 20 / 180 * 2) * 1000 = 722
-	DutyCycle += 722 * DirecaoScan;
+	AnguloAtual += 20 * DirecaoScan;
 	
-	// Servo estará com DutyCycle no máximo quando o ângulo for 180º e minimo quando for 0º
-	// DutyCycleMaximo = (0.5 + 180 / 180 * 2) * 1000 = 2500
-	// DutyCycleMinimo = (0.5 + 0 / 180 * 2) * 1000 = 500
-	if(DutyCycle <= 500 || DutyCycle >= 2500){
-		DirecaoScan *= -1;
+	if (AnguloAtual >= 180) {
+		AnguloAtual = 180;
+		DirecaoScan = -1;
 	}
+	
+	else if (AnguloAtual <= 0) {
+		AnguloAtual = 0;
+		DirecaoScan = 1;
+	}
+	
+	float dutyCycle_ms = 0.5f + ((float)AnguloAtual / 180.0f) * 2.0f;
+	DutyCycle = (uint32_t)(dutyCycle_ms * 1000.0f);
+	UsandoTimer = 1;
 }

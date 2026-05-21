@@ -38,6 +38,7 @@ int    AnguloAtual = 90;
 
 // acessando
 extern uint32_t DutyCycle;
+extern int UsandoTimer;
 
 int main(void)
 {
@@ -65,15 +66,14 @@ int main(void)
 
 		TrocarEstado(tecla);
 
-		if (EstadoAtual == Scan && DutyCycle != ultimoDutyCycle)
+		if (EstadoAtual == Scan && UsandoTimer)
 		{
-			ultimoDutyCycle = DutyCycle;
+			Inicializa_Timer0((uint32_t)(dutyCycle_ms * 1000));
 			float dutyCycle_ms = (float)DutyCycle / 1000.0f;
-			AtualizaLCDPosicao(AnguloAtual, dutyCycle_ms);
 			// Derivar angulo a partir do DutyCycle atual
 			// dc = 500 + (angulo/180)*2000  =>  angulo = (dc-500)/2000 * 180
-			AnguloAtual = (int)(((float)(DutyCycle - 500) / 2000.0f) * 180.0f);
 			AtualizaLCDPosicao(AnguloAtual, dutyCycle_ms);
+			UsandoTimer = 0;
 		}
 	}
 
@@ -136,6 +136,7 @@ void TrocarEstado(char tecla)
 		{
 			EstadoAtual = Scan;
 			AnguloAtual = 0;
+			UsandoTimer = 1;
 			LCD_EnviaComando(LIMPAR);
 			LCD_EnviaComando(PRIMEIRA_LINHA);
 			LCD_EnviaString("Modo Scan");
