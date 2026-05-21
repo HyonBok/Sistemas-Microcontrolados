@@ -21,7 +21,7 @@ void LCD_EnviaComando(uint32_t comando);
 void LCD_EnviaDado(uint32_t dado);
 void LCD_EnviaString(const char *string);
 void Configura_Timers(void);
-void Inicializa_Timer0(float dutyCycle);
+void Inicializa_Timer0(int dutyCycle);
 void Inicializa_Timer2(void);
 char Leitura_Teclado(void);
 void TrocarEstado(char tecla);
@@ -64,18 +64,6 @@ int main(void)
 		char tecla = Leitura_Teclado();
 
 		TrocarEstado(tecla);
-
-		if (EstadoAtual == Posicao && tecla >= '0' && tecla <= '9')
-		{
-			if (tecla != '0')
-				AnguloAtual = (tecla - '1') * 20; 
-			else
-				AnguloAtual = 180;                
-
-			float dutyCycle_ms = 0.5f + ((float)AnguloAtual / 180.0f) * 2.0f;
-			Inicializa_Timer0((uint32_t)(dutyCycle_ms * 1000));
-			AtualizaLCDPosicao(AnguloAtual, dutyCycle_ms);
-		}
 
 		if (EstadoAtual == Scan && DutyCycle != ultimoDutyCycle)
 		{
@@ -133,6 +121,15 @@ void TrocarEstado(char tecla)
 			LCD_EnviaComando(PRIMEIRA_LINHA);
 			LCD_EnviaString("Modo Posicao");
 		}
+		
+		if (tecla != '0')
+			AnguloAtual = (tecla - '1') * 20; 
+		else
+			AnguloAtual = 180;                
+
+		float dutyCycle_ms = 0.5f + ((float)AnguloAtual / 180.0f) * 2.0f;
+		Inicializa_Timer0((uint32_t)(dutyCycle_ms * 1000));
+		AtualizaLCDPosicao(AnguloAtual, dutyCycle_ms);
 	}
 	else if (tecla == 'A')
 	{

@@ -140,7 +140,7 @@ void Configura_Timers()
 
 // Inicializa timer0
 // Timer0 é que define o PWM do servo motor, então valor de tempo vai variar
-void Inicializa_Timer0(float dutyCycle)
+void Inicializa_Timer0(int dutyCycle)
 {
 	// Primeiro verifica se o dutyCycle mudou, caso contrário, não faz sentido continuar
 	if(dutyCycle == DutyCycle)
