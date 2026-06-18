@@ -73,9 +73,9 @@ void UART_Init(void)
 			
   UART0_CTL_R &= ~0x00000001; 
  
-  UART0_IBRD_R = 17; // valor inteiro para 57600 
-  UART0_FBRD_R = 23; // valor fracionário para 57600
-  UART0_LCRH_R = 0x0000006A; // paridade ímpar com 1 stop bit
+  UART0_IBRD_R = 86; // valor inteiro para 57600 
+  UART0_FBRD_R = 52; // valor fracionário para 57600
+  UART0_LCRH_R = 0x62; // paridade ímpar com 1 stop bit
 
   UART0_CC_R = 0;
   GPIO_PORTA_AHB_AMSEL_R &= ~0x03; 

@@ -75,12 +75,14 @@ int main(void)
 		
     // MODO POTENCIÔMETRO
     if (estado_atual == ESTADO_POTENCIOMETRO) {
-			// a leitura acontece quando a flag do timer sobe
+			// a cada 200ms ativa a flag e lê o valor ADC (que varia de 0 a 4095)
       if (flag_timer_200ms) {
 				flag_timer_200ms = 0;
 				uint32_t adc_val = ADC0_ReadSS3();
+				// o valor ADC é armazenado aqui
 				passos_alvo = adc_val;
 				contador_1s++;
+				// print periódico no terminal
 				if (contador_1s >= 5) {
 					contador_1s = 0;
 					int32_t graus_x10 = (posicao_atual_passos * 3600) / 4095;
@@ -93,17 +95,21 @@ int main(void)
 					UART_OutString(" graus\r\n");
 				}
 			}
-      // a cada loop o motor anda meio passo
+      // se o valor lido no ADC for diferente da posição atual, move o motor
       if (posicao_atual_passos != passos_alvo) {
+				// se a posição for maior
 				if (passos_alvo > posicao_atual_passos) {
-					indice_motor_meiopasso = (indice_motor_meiopasso + 1) % 8; // cíclico
+					indice_motor_meiopasso = (indice_motor_meiopasso + 1) % 8; // 8 passos por ciclo
           posicao_atual_passos++;
+				// se a posição for menor
         } else {
 					indice_motor_meiopasso = (indice_motor_meiopasso - 1);
-          if (indice_motor_meiopasso > 7) indice_motor_meiopasso = 7; // caso tenha overflow
+          if (indice_motor_meiopasso > 7) indice_motor_meiopasso = 7; // caso tenha overflow, reseta o índice
           posicao_atual_passos--;
-				}       
-        Motor_Output(seq_meio_passo[indice_motor_meiopasso]);       
+				}
+				// envia o valor para o motor
+        Motor_Output(seq_meio_passo[indice_motor_meiopasso]); 
+				// tempo de espera entre passos
         SysTick_Wait1ms(5); 
       }
 		}
@@ -114,9 +120,11 @@ int main(void)
 			static uint8_t cmd_idx = 0;
 			if (tecla != 0) {
 				UART_OutChar(tecla); // eco
-				// assim que aperta enter, verifica se tem 4 dígitos e converte de graus para passos
+				// assim que aperta enter processa o comando
 				if (tecla == '\r' || tecla == '\n') {
+					// verifica se tem 4 dígitos e se começa com + ou -
 					if (cmd_idx == 4 && (cmd_buf[0] == '+' || cmd_buf[0] == '-')) {
+						// converte o comando de graus para passos
 						int32_t graus = (cmd_buf[1]-'0')*100 + (cmd_buf[2]-'0')*10 + (cmd_buf[3]-'0');
 						int32_t passos = (int32_t)((graus * 2048L) / 360);
 						if (cmd_buf[0] == '-') passos = -passos;
@@ -133,7 +141,7 @@ int main(void)
 				contador_1s++;
 				if (contador_1s >= 5) {
 					contador_1s = 0;
-					int32_t graus_x10 = (posicao_atual_passos * 3600) / 4095;
+					int32_t graus_x10 = (posicao_atual_passos * 3600) / 2048;
 					UART_OutString("[TERM] Posicao: ");
 					UART_PrintUInt(graus_x10 / 10);
 					UART_OutChar(',');
@@ -142,7 +150,7 @@ int main(void)
 				}
 			}
 
-			// a cada loop anda um passo inteiro
+			// se a posição atual é diferente da desejada, a cada loop anda um passo inteiro
 			if (posicao_atual_passos != passos_alvo) {
 				if (passos_alvo > posicao_atual_passos) {
 					indice_motor_meiopasso = (indice_motor_meiopasso + 1) % 4;
@@ -151,10 +159,11 @@ int main(void)
 					indice_motor_meiopasso = (indice_motor_meiopasso + 3) % 4;
 					posicao_atual_passos--;
 				}
+				// envia para o motor 
 				Motor_Output(seq_passo_completo[indice_motor_meiopasso % 4]);
 				SysTick_Wait1ms(5);
 				if (posicao_atual_passos == passos_alvo) {
-					int32_t graus_x10 = (posicao_atual_passos * 3600) / 4095;
+					int32_t graus_x10 = (posicao_atual_passos * 3600) / 2048;
 					UART_OutString("[TERM] Posicao: ");
 					UART_PrintUInt(graus_x10 / 10);
 					UART_OutChar(',');
